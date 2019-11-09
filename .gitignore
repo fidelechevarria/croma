@@ -1,3 +1,6 @@
 __pycache__
 .vscode
 env
+dist
+croma.egg-info
+build

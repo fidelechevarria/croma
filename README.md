@@ -1,2 +1,2 @@
 # croma
-A simple scientific visualization and animation library for Python
+A simple scientific visualization library for Python

@@ -4,14 +4,14 @@ import time
 import vtk
 
 class vtkTimerCallback():
-    def __init__(self, steps, sources, mappers, actors, iren, callbacks):
+    def __init__(self, steps, sources, mappers, actors, callbacks, interactor):
         self.timer_count = 0
         self.steps = steps
         self.sources = sources
         self.mappers = mappers
         self.actors = actors
         self.callbacks = callbacks
-        self.iren = iren
+        self.interactor = interactor
         self.timerId = None
         self.state = np.array([0., 0., 0., 0., 0., 0., 1., 1., 1.])
         self.state_dot = np.array((0.001, 0.001, -0.001, 0.001, 0.001, 0., 0.001, -0.001, 0.001))
@@ -22,7 +22,6 @@ class vtkTimerCallback():
     def execute(self, obj, event):
         # Aquí debería acceder a los nuevos estados (ya generados o generados aquí con un generador).
         self.state = self.state + self.state_dot 
-        rd = self.state
         self.time_end = time.time()
         if self.timer_count == 0:
             dt = 0
@@ -30,14 +29,11 @@ class vtkTimerCallback():
             dt = self.time_end - self.time_start
         if dt > 0.05:
             dt = 0 # Avoids time to keep counting during user interaction
-        try:
-            print(1/dt)
-        except:
-            pass
         self.time += dt
-        pos = self.callbacks(dt)
+        for i in range(len(self.callbacks)):
+            pos = self.callbacks[i](dt)
+            self.actors[i].SetPosition(pos[0], pos[1], pos[2])
         self.time_start = self.time_end
-        self.actors[0].SetPosition(pos[0], pos[1], 0)
         # self.actors[0].SetScale(rd[6])
         # self.actors[1].SetPosition(-rd[2], -rd[3], 0)
         # self.actors[1].SetScale(rd[7])
@@ -46,15 +42,14 @@ class vtkTimerCallback():
         # transform = vtk.vtkTransform()
         # transform.Translate(rd[4], 0.0, 0.0)
         # self.actors[2].SetUserTransform(transform)
-        
         # También se puede hacer un self.actors[0].SetPosition() ó SetScale()
-        iren = obj
-        iren.GetRenderWindow().Render()
+        interactor = obj
+        interactor.GetRenderWindow().Render()
         self.timer_count += 1
 
         if self.timer_count == self.steps:
             if self.timerId:
-                iren.DestroyTimer(self.timerId)
+                interactor.DestroyTimer(self.timerId)
 
 class figure3D():
 
@@ -68,6 +63,7 @@ class figure3D():
 
         # render window
         self.renwin = vtk.vtkRenderWindow()
+        self.renwin.SetWindowName("Croma - Visualization Tool")
         self.renwin.AddRenderer(self.renderer)
         self.renwin.SetSize(size[0], size[1])
 
@@ -79,6 +75,7 @@ class figure3D():
 
         self.interactor.Initialize()
 
+        self.names = {}
         self.sources = []
         self.mappers = []
         self.actors = []
@@ -118,6 +115,7 @@ class figure3D():
         actor.GetProperty().SetEdgeColor(self.colors.GetColor3d('SteelBlue'))
 
         # Append elements
+        self.names[name] = len(self.sources)
         self.sources.append(sphere)
         self.mappers.append(mapper)
         self.actors.append(actor)
@@ -161,6 +159,7 @@ class figure3D():
         actor.GetProperty().SetEdgeColor(self.colors.GetColor3d('SteelBlue'))
 
         # Append elements
+        self.names[name] = len(self.sources)        
         self.sources.append(quadric)
         self.mappers.append(mapper)
         self.actors.append(actor)
@@ -188,6 +187,7 @@ class figure3D():
         axes.SetXAxisLabelText("test")
 
         # Append elements
+        self.names[name] = len(self.sources)
         self.sources.append(None)
         self.mappers.append(None)
         self.actors.append(axes)
@@ -197,9 +197,26 @@ class figure3D():
         # Initialize must be called prior to creating timer events.
         self.interactor.Initialize()
 
-    def animate(self, callbacks):
+    def animate(self, *argv, time=np.inf):
+        type = 0
+        object_names = []
+        object_ids = []
+        object_properties = []
+        object_callbacks = []
+        for arg in argv:
+            if type == 0:
+                object_names.append(arg)
+                object_ids.append(self.names[arg])
+            elif type == 1:
+                object_properties.append(arg)
+            elif type == 2:
+                object_callbacks.append(arg)
+                type = -1
+            type += 1
         # Sign up to receive TimerEvent
-        cb = vtkTimerCallback(10000, self.sources, self.mappers, self.actors, self.interactor, callbacks)
+        print(object_ids)
+        # TODO: Reorder all inputs using requested ids
+        cb = vtkTimerCallback(200, self.sources, self.mappers, self.actors, object_callbacks, self.interactor)
         self.interactor.AddObserver(vtk.vtkCommand.TimerEvent, cb.execute)
         cb.timerId = self.interactor.CreateRepeatingTimer(15) # Maximum is 60 Hz
         # start the interaction and timer

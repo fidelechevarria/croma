@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.0.3",
     author="Fidel Echevarria Corrales",
     author_email="fidel.echevarria.corrales@gmail.com",
-    description="A simple scientific visualization and animation library for Python",
+    description="A simple scientific visualization library for Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/fidelechevarria/croma",
@@ -16,8 +16,7 @@ setuptools.setup(
     install_requires=[
         'numpy',
         'scipy',
-        'vispy',
-        'pyglet',
+        'vtk',
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

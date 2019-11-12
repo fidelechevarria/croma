@@ -4,3 +4,4 @@ env
 dist
 croma.egg-info
 build
+vtk_examples

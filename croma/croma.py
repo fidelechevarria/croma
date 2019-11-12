@@ -1,32 +1,51 @@
-import numpy as np
-import vtk
 from scipy.spatial.transform import Rotation as R
+import numpy as np
+import time
+import vtk
 
 class vtkTimerCallback():
-    def __init__(self, steps, sources, mappers, actors, iren):
+    def __init__(self, steps, sources, mappers, actors, iren, callbacks):
         self.timer_count = 0
         self.steps = steps
         self.sources = sources
         self.mappers = mappers
         self.actors = actors
+        self.callbacks = callbacks
         self.iren = iren
         self.timerId = None
         self.state = np.array([0., 0., 0., 0., 0., 0., 1., 1., 1.])
         self.state_dot = np.array((0.001, 0.001, -0.001, 0.001, 0.001, 0., 0.001, -0.001, 0.001))
+        self.time_start = 0
+        self.time_end = 0
+        self.time = 0
 
     def execute(self, obj, event):
         # Aquí debería acceder a los nuevos estados (ya generados o generados aquí con un generador).
         self.state = self.state + self.state_dot 
         rd = self.state
-        self.actors[0].SetPosition(rd[0], rd[1], 0)
-        self.actors[0].SetScale(rd[6])
-        self.actors[1].SetPosition(-rd[2], -rd[3], 0)
-        self.actors[1].SetScale(rd[7])
+        self.time_end = time.time()
+        if self.timer_count == 0:
+            dt = 0
+        else:
+            dt = self.time_end - self.time_start
+        if dt > 0.05:
+            dt = 0 # Avoids time to keep counting during user interaction
+        try:
+            print(1/dt)
+        except:
+            pass
+        self.time += dt
+        pos = self.callbacks(dt)
+        self.time_start = self.time_end
+        self.actors[0].SetPosition(pos[0], pos[1], 0)
+        # self.actors[0].SetScale(rd[6])
+        # self.actors[1].SetPosition(-rd[2], -rd[3], 0)
+        # self.actors[1].SetScale(rd[7])
         
-        #  The axes are positioned with a user transform
-        transform = vtk.vtkTransform()
-        transform.Translate(rd[4], 0.0, 0.0)
-        self.actors[2].SetUserTransform(transform)
+        # #  The axes are positioned with a user transform
+        # transform = vtk.vtkTransform()
+        # transform.Translate(rd[4], 0.0, 0.0)
+        # self.actors[2].SetUserTransform(transform)
         
         # También se puede hacer un self.actors[0].SetPosition() ó SetScale()
         iren = obj
@@ -178,11 +197,11 @@ class figure3D():
         # Initialize must be called prior to creating timer events.
         self.interactor.Initialize()
 
-    def animate(self):
+    def animate(self, callbacks):
         # Sign up to receive TimerEvent
-        cb = vtkTimerCallback(10000, self.sources, self.mappers, self.actors, self.interactor)
-        self.interactor.AddObserver('TimerEvent', cb.execute)
-        cb.timerId = self.interactor.CreateRepeatingTimer(5)
+        cb = vtkTimerCallback(10000, self.sources, self.mappers, self.actors, self.interactor, callbacks)
+        self.interactor.AddObserver(vtk.vtkCommand.TimerEvent, cb.execute)
+        cb.timerId = self.interactor.CreateRepeatingTimer(15) # Maximum is 60 Hz
         # start the interaction and timer
         self.renwin.Render()
         self.interactor.Start()

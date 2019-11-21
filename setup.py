@@ -17,6 +17,7 @@ setuptools.setup(
         'numpy',
         'scipy',
         'vtk',
+        'plotly',
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

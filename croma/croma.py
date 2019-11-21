@@ -4,7 +4,7 @@ import time
 import vtk
 
 class vtkTimerCallback():
-    def __init__(self, steps, sources, mappers, actors, callbacks, interactor):
+    def __init__(self, steps, sources, mappers, actors, callbacks, interactor, camera):
         self.timer_count = 0
         self.steps = steps
         self.sources = sources
@@ -12,6 +12,7 @@ class vtkTimerCallback():
         self.actors = actors
         self.callbacks = callbacks
         self.interactor = interactor
+        self.camera = camera
         self.timerId = None
         self.state = np.array([0., 0., 0., 0., 0., 0., 1., 1., 1.])
         self.state_dot = np.array((0.001, 0.001, -0.001, 0.001, 0.001, 0., 0.001, -0.001, 0.001))
@@ -34,6 +35,10 @@ class vtkTimerCallback():
             pos = self.callbacks[i](dt)
             self.actors[i].SetPosition(pos[0], pos[1], pos[2])
         self.time_start = self.time_end
+
+        self.camera.Elevation(-pos[0])
+        self.camera.Roll(-pos[0])
+
         # self.actors[0].SetScale(rd[6])
         # self.actors[1].SetPosition(-rd[2], -rd[3], 0)
         # self.actors[1].SetScale(rd[7])
@@ -57,9 +62,18 @@ class figure3D():
 
         self.colors = vtk.vtkNamedColors()
 
+        # Camera
+        self.camera = vtk.vtkCamera()
+        self.camera.SetPosition(0, 0, 0)
+        self.camera.SetFocalPoint(0, 0, 0)
+
         # A renderer and render window
         self.renderer = vtk.vtkRenderer()
         self.renderer.SetBackground(self.colors.GetColor3d(bgcolor))
+        # self.renderer.SetActiveCamera(self.camera)
+        
+        # self.camera = self.renderer.GetActiveCamera()
+
 
         # render window
         self.renwin = vtk.vtkRenderWindow()
@@ -216,7 +230,7 @@ class figure3D():
         # Sign up to receive TimerEvent
         print(object_ids)
         # TODO: Reorder all inputs using requested ids
-        cb = vtkTimerCallback(200, self.sources, self.mappers, self.actors, object_callbacks, self.interactor)
+        cb = vtkTimerCallback(200, self.sources, self.mappers, self.actors, object_callbacks, self.interactor, self.camera)
         self.interactor.AddObserver(vtk.vtkCommand.TimerEvent, cb.execute)
         cb.timerId = self.interactor.CreateRepeatingTimer(15) # Maximum is 60 Hz
         # start the interaction and timer

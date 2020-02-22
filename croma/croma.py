@@ -37,11 +37,9 @@ class vtkTimerCallback():
             idx = self.callbacks[i][2]
             if prop == 'center':
                 center = cb(self.time)
-                print(f'Center: {center} Time: {self.time:.2f}')
                 self.sources[idx].SetCenter(center[0], center[1], center[2])
             elif prop == 'radius':
                 radius = cb(self.time)
-                print(f'Radius: {radius} Time: {self.time:.2f}')
                 self.sources[idx].SetRadius(radius)
         self.time_start = self.time_end
 
@@ -232,7 +230,8 @@ class figure3D():
 
     def animate(self, *argv, time=np.inf):
         # Sign up to receive TimerEvent
-        cb = vtkTimerCallback(200, self.sources, self.mappers, self.actors, self.callbacks, self.interactor, self.camera)
+        self.iterations = 334
+        cb = vtkTimerCallback(self.iterations, self.sources, self.mappers, self.actors, self.callbacks, self.interactor, self.camera)
         self.interactor.AddObserver(vtk.vtkCommand.TimerEvent, cb.execute)
         cb.timerId = self.interactor.CreateRepeatingTimer(15) # Maximum is 60 Hz
         # start the interaction and timer

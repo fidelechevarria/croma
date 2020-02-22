@@ -10,6 +10,7 @@ class Animation:
         print('interpolation created')
 
     def callback(self, time):
+        time = np.clip(time, self.x[0], self.x[-1])
         return self.f(time)
 
 def linear(trajectory, time, frequency):

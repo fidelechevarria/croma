@@ -34,7 +34,7 @@ class vtkTimerCallback():
         for i in range(len(self.callbacks)):
             radius = self.callbacks[0](self.time)
             print(f'Radius: {radius:.2f} Time: {self.time:.2f}')
-            self.actors[0].SetScale(radius, radius, radius)
+            self.sources[0].SetRadius(radius)
         self.time_start = self.time_end
 
         # self.camera.Elevation(0)

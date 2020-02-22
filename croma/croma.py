@@ -32,14 +32,17 @@ class vtkTimerCallback():
             dt = 0 # Avoids time to keep counting during user interaction
         self.time += dt
         for i in range(len(self.callbacks)):
-            if self.callbacks[i][1] == 'center':
-                center = self.callbacks[i][0](self.time)
+            cb = self.callbacks[i][0]
+            prop = self.callbacks[i][1]
+            idx = self.callbacks[i][2]
+            if prop == 'center':
+                center = cb(self.time)
                 print(f'Center: {center} Time: {self.time:.2f}')
-                self.sources[0].SetCenter(center[0], center[1], center[2])
-            elif self.callbacks[i][1] == 'radius':
-                radius = self.callbacks[i][0](self.time)
+                self.sources[idx].SetCenter(center[0], center[1], center[2])
+            elif prop == 'radius':
+                radius = cb(self.time)
                 print(f'Radius: {radius} Time: {self.time:.2f}')
-                self.sources[0].SetRadius(radius)
+                self.sources[idx].SetRadius(radius)
         self.time_start = self.time_end
 
         # self.camera.Elevation(0)
@@ -109,16 +112,15 @@ class figure3D():
     def add_sphere(self, name='sphere1', center=[0, 0, 0], orientation=[0, 0, 0], radius=0.2, color='blue', transparency=0.8, contours='latitude'):
         
         if hasattr(radius, '__call__'):
-            self.callbacks.append([radius, 'radius'])
+            self.callbacks.append([radius, 'radius', len(self.sources)])
             radius = radius(0.0)
 
         if hasattr(center, '__call__'):
-            self.callbacks.append([center, 'center'])
+            self.callbacks.append([center, 'center', len(self.sources)])
             center = center(0.0)
 
         sphere = vtk.vtkSphere()
         sphere.SetCenter(center[0], center[1], center[2])
-        print(radius)
         sphere.SetRadius(radius)
 
         # The sample function generates a distance function from the implicit

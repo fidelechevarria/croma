@@ -32,12 +32,13 @@ class vtkTimerCallback():
             dt = 0 # Avoids time to keep counting during user interaction
         self.time += dt
         for i in range(len(self.callbacks)):
-            pos = self.callbacks[i](dt)
-            self.actors[i].SetPosition(pos[0], pos[1], pos[2])
+            radius = self.callbacks[0](self.time)
+            print(f'Radius: {radius:.2f} Time: {self.time:.2f}')
+            self.actors[0].SetScale(radius, radius, radius)
         self.time_start = self.time_end
 
-        self.camera.Elevation(-pos[0])
-        self.camera.Roll(-pos[0])
+        # self.camera.Elevation(0)
+        # self.camera.Roll(0)
 
         # self.actors[0].SetScale(rd[6])
         # self.actors[1].SetPosition(-rd[2], -rd[3], 0)
@@ -93,15 +94,22 @@ class figure3D():
         self.sources = []
         self.mappers = []
         self.actors = []
+        self.callbacks = []
 
     def render(self):
         self.renwin.Render()
         self.interactor.Start()
+        self.animate()
 
-    def add_sphere(self, name='sphere1', center=[0, 0, 0], orientation=[0, 0, 0], radius=5.2, color='blue', transparency=0.8, contours='latitude'):
+    def add_sphere(self, name='sphere1', center=[0, 0, 0], orientation=[0, 0, 0], radius=0.2, color='blue', transparency=0.8, contours='latitude'):
         
+        if hasattr(radius, '__call__'):
+            self.callbacks.append(radius)
+            radius = radius(0.0)
+
         sphere = vtk.vtkSphere()
         sphere.SetCenter(center[0], center[1], center[2])
+        print(radius)
         sphere.SetRadius(radius)
 
         # The sample function generates a distance function from the implicit
@@ -212,25 +220,25 @@ class figure3D():
         self.interactor.Initialize()
 
     def animate(self, *argv, time=np.inf):
-        type = 0
-        object_names = []
-        object_ids = []
-        object_properties = []
-        object_callbacks = []
-        for arg in argv:
-            if type == 0:
-                object_names.append(arg)
-                object_ids.append(self.names[arg])
-            elif type == 1:
-                object_properties.append(arg)
-            elif type == 2:
-                object_callbacks.append(arg)
-                type = -1
-            type += 1
-        # Sign up to receive TimerEvent
-        print(object_ids)
+        # type = 0
+        # object_names = []
+        # object_ids = []
+        # object_properties = []
+        # object_callbacks = []
+        # for arg in argv:
+        #     if type == 0:
+        #         object_names.append(arg)
+        #         object_ids.append(self.names[arg])
+        #     elif type == 1:
+        #         object_properties.append(arg)
+        #     elif type == 2:
+        #         object_callbacks.append(arg)
+        #         type = -1
+        #     type += 1
+        # # Sign up to receive TimerEvent
+        # print(object_ids)
         # TODO: Reorder all inputs using requested ids
-        cb = vtkTimerCallback(200, self.sources, self.mappers, self.actors, object_callbacks, self.interactor, self.camera)
+        cb = vtkTimerCallback(200, self.sources, self.mappers, self.actors, self.callbacks, self.interactor, self.camera)
         self.interactor.AddObserver(vtk.vtkCommand.TimerEvent, cb.execute)
         cb.timerId = self.interactor.CreateRepeatingTimer(15) # Maximum is 60 Hz
         # start the interaction and timer

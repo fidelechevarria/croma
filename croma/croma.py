@@ -4,9 +4,8 @@ import time
 import vtk
 
 class vtkTimerCallback():
-    def __init__(self, steps, sources, mappers, actors, callbacks, interactor, camera):
+    def __init__(self, sources, mappers, actors, callbacks, interactor, camera):
         self.timer_count = 0
-        self.steps = steps
         self.sources = sources
         self.mappers = mappers
         self.actors = actors
@@ -19,6 +18,11 @@ class vtkTimerCallback():
         self.time_start = 0
         self.time_end = 0
         self.time = 0
+        maxAnimationTime = 0.0
+        for i in range(len(self.callbacks)):
+            if self.callbacks[i][3] > maxAnimationTime:
+                maxAnimationTime = self.callbacks[i][3]
+        self.steps = int(maxAnimationTime * 66.666) + 1
 
     def execute(self, obj, event):
         # Aquí debería acceder a los nuevos estados (ya generados o generados aquí con un generador).
@@ -109,13 +113,15 @@ class figure3D():
 
     def add_sphere(self, name='sphere1', center=[0, 0, 0], orientation=[0, 0, 0], radius=0.2, color='blue', transparency=0.8, contours='latitude'):
         
-        if hasattr(radius, '__call__'):
-            self.callbacks.append([radius, 'radius', len(self.sources)])
-            radius = radius(0.0)
+        callbackTimes = []
 
-        if hasattr(center, '__call__'):
-            self.callbacks.append([center, 'center', len(self.sources)])
-            center = center(0.0)
+        if hasattr(radius[0], '__call__'):
+            self.callbacks.append([radius[0], 'radius', len(self.sources), radius[1]])
+            radius = radius[0](0.0)
+
+        if hasattr(center[0], '__call__'):
+            self.callbacks.append([center[0], 'center', len(self.sources), center[1]])
+            center = center[0](0.0)
 
         sphere = vtk.vtkSphere()
         sphere.SetCenter(center[0], center[1], center[2])
@@ -230,8 +236,7 @@ class figure3D():
 
     def animate(self, *argv, time=np.inf):
         # Sign up to receive TimerEvent
-        self.iterations = 334
-        cb = vtkTimerCallback(self.iterations, self.sources, self.mappers, self.actors, self.callbacks, self.interactor, self.camera)
+        cb = vtkTimerCallback(self.sources, self.mappers, self.actors, self.callbacks, self.interactor, self.camera)
         self.interactor.AddObserver(vtk.vtkCommand.TimerEvent, cb.execute)
         cb.timerId = self.interactor.CreateRepeatingTimer(15) # Maximum is 60 Hz
         # start the interaction and timer

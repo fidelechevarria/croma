@@ -15,4 +15,4 @@ class Animation:
 
 def linear(trajectory, time, frequency):
     animation = Animation(trajectory, time, frequency)
-    return animation.callback
+    return animation.callback, time

@@ -1,3 +1,5 @@
+# Color list: https://en.wikipedia.org/wiki/Web_colors
+
 from scipy.spatial.transform import Rotation as R
 import numpy as np
 import time
@@ -110,7 +112,7 @@ class figure3D():
         self.interactor.Start()
         self.animate()
 
-    def add_sphere(self, center=[0, 0, 0], radius=0.2, color='AliceBlue', opacity=1.0, contours='latitude', theta_resolution=30, phi_resolution=30, edge_visibility=False, edge_color='SteelBlue'):
+    def add_sphere(self, center=[0, 0, 0], radius=0.2, color='AliceBlue', opacity=1.0, contours='latitude', theta_resolution=30, phi_resolution=30, edge_visibility=False, edge_color='Indigo'):
         
         if hasattr(radius[0], '__call__'):
             self.callbacks.append([radius[0], 'radius', len(self.sources), radius[1]])

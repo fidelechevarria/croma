@@ -111,7 +111,7 @@ class figure3D():
         self.interactor.Start()
         self.animate()
 
-    def add_sphere(self, name='sphere1', center=[0, 0, 0], radius=0.2, color='blue', opacity=1.0, contours='latitude', resolution=40):
+    def add_sphere(self, name='sphere1', center=[0, 0, 0], radius=0.2, color='blue', opacity=1.0, contours='latitude', theta_resolution=30, phi_resolution=30, edge_visibility=False):
         
         if hasattr(radius[0], '__call__'):
             self.callbacks.append([radius[0], 'radius', len(self.sources), radius[1]])
@@ -121,31 +121,22 @@ class figure3D():
             self.callbacks.append([center[0], 'center', len(self.sources), center[1]])
             center = center[0](0.0)
 
-        sphere = vtk.vtkSphere()
+        sphere = vtk.vtkSphereSource()
         sphere.SetCenter(center[0], center[1], center[2])
         sphere.SetRadius(radius)
-
-        # The sample function generates a distance function from the implicit
-        # function. This is then contoured to get a polygonal surface.
-        sample = vtk.vtkSampleFunction()
-        sample.SetImplicitFunction(sphere)
-        sample.SetModelBounds(-.5, .5, -.5, .5, -.5, .5)
-        sample.SetSampleDimensions(resolution, resolution, resolution)
-        sample.ComputeNormalsOff()
-
-        # contour
-        surface = vtk.vtkContourFilter()
-        surface.SetInputConnection(sample.GetOutputPort())
-        surface.SetValue(0, 0.0)
+        sphere.SetThetaResolution(theta_resolution)
+        sphere.SetPhiResolution(phi_resolution)
+        sphere.SetLatLongTessellation(False)
 
         # mapper
         mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(surface.GetOutputPort())
+        mapper.SetInputConnection(sphere.GetOutputPort())
         mapper.ScalarVisibilityOff()
 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        actor.GetProperty().EdgeVisibilityOn()
+
+        actor.GetProperty().SetEdgeVisibility(edge_visibility)
         actor.GetProperty().SetColor(self.colors.GetColor3d('AliceBlue'))
         actor.GetProperty().SetEdgeColor(self.colors.GetColor3d('SteelBlue'))
         actor.GetProperty().SetOpacity(opacity)

@@ -100,7 +100,6 @@ class figure3D():
 
         self.interactor.Initialize()
 
-        self.names = {}
         self.sources = []
         self.mappers = []
         self.actors = []
@@ -111,7 +110,7 @@ class figure3D():
         self.interactor.Start()
         self.animate()
 
-    def add_sphere(self, name='sphere1', center=[0, 0, 0], radius=0.2, color='blue', opacity=1.0, contours='latitude', theta_resolution=30, phi_resolution=30, edge_visibility=False):
+    def add_sphere(self, center=[0, 0, 0], radius=0.2, color='AliceBlue', opacity=1.0, contours='latitude', theta_resolution=30, phi_resolution=30, edge_visibility=False, edge_color='SteelBlue'):
         
         if hasattr(radius[0], '__call__'):
             self.callbacks.append([radius[0], 'radius', len(self.sources), radius[1]])
@@ -137,12 +136,11 @@ class figure3D():
         actor.SetMapper(mapper)
 
         actor.GetProperty().SetEdgeVisibility(edge_visibility)
-        actor.GetProperty().SetColor(self.colors.GetColor3d('AliceBlue'))
-        actor.GetProperty().SetEdgeColor(self.colors.GetColor3d('SteelBlue'))
+        actor.GetProperty().SetColor(self.colors.GetColor3d(color))
+        actor.GetProperty().SetEdgeColor(self.colors.GetColor3d(edge_color))
         actor.GetProperty().SetOpacity(opacity)
 
         # Append elements
-        self.names[name] = len(self.sources)
         self.sources.append(sphere)
         self.mappers.append(mapper)
         self.actors.append(actor)
@@ -155,7 +153,7 @@ class figure3D():
 
         return actor
 
-    def add_ellipsoid(self, name='ellipsoid1', center=[0, 0, 0], orientation=[0, 0, 0], radius=5.2, color='blue', opacity=1.0, contours='latitude'):
+    def add_ellipsoid(self, center=[0, 0, 0], orientation=[0, 0, 0], radius=5.2, color='blue', opacity=1.0, contours='latitude'):
         
         # create an ellipsoid using an implicit quadric
         quadric = vtk.vtkQuadric()
@@ -186,7 +184,6 @@ class figure3D():
         actor.GetProperty().SetEdgeColor(self.colors.GetColor3d('SteelBlue'))
 
         # Append elements
-        self.names[name] = len(self.sources)        
         self.sources.append(quadric)
         self.mappers.append(mapper)
         self.actors.append(actor)
@@ -197,7 +194,7 @@ class figure3D():
         # Initialize must be called prior to creating timer events.
         self.interactor.Initialize()
         
-    def add_axes(self, name='axes1', origin=[0, 0, 2], orientation=[0, 0, 0], length=1, color='black', arrow_type='triangle_30'):
+    def add_axes(self, origin=[0, 0, 2], orientation=[0, 0, 0], length=1, color='black', arrow_type='triangle_30'):
 
         transform = vtk.vtkTransform()
         transform.Translate(1.0, 0.0, 0.0)
@@ -214,7 +211,6 @@ class figure3D():
         axes.SetXAxisLabelText("test")
 
         # Append elements
-        self.names[name] = len(self.sources)
         self.sources.append(None)
         self.mappers.append(None)
         self.actors.append(axes)

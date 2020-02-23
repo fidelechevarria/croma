@@ -4,16 +4,17 @@ from croma.animation import animation
 # croma.set_backend('vtk')
 
 fig1 = croma.figure3D(bgcolor='silver')
-fig1.add_sphere(center=animation(trajectory=[[0.2, 0, 0], [0.3, 0.3, 0], [0.2, 0, 0]], time=[0, 2, 3], method='linear'),
-                radius=animation(trajectory=[[0.2], [0.3]], time=[0, 1]),
-                color='AliceBlue',
+fig1.add_sphere(center=animation(trajectory=[[0.2, 0, 0], [0.3, 0.3, 0], [0.1, 0.1, 0], [0.2, 0, 0.2]], time=[0, 1, 2, 2.5], method='cubic'),
+                radius=animation(trajectory=[[0.2], [0.3], [0.2], [0.15]], time=[0, 0.5, 1, 2], method='cubic'),
+                color='aliceblue',
+                edge_color='Indigo',
                 opacity=1.0,
                 edge_visibility=True)
 fig1.add_sphere(center=[0.2, 0, 0.3],
                 radius=animation(trajectory=[[0.1], [0.2]], time=[0, 2]),
                 color='AliceBlue',
                 opacity=1.0,
-                edge_visibility=True)
+                edge_visibility=False)
 fig1.add_ellipsoid(center=[0, 0, 0],
                    orientation=[0, 0, 0],
                    radius=0.6,

@@ -111,10 +111,8 @@ class figure3D():
         self.interactor.Start()
         self.animate()
 
-    def add_sphere(self, name='sphere1', center=[0, 0, 0], orientation=[0, 0, 0], radius=0.2, color='blue', transparency=0.8, contours='latitude'):
+    def add_sphere(self, name='sphere1', center=[0, 0, 0], radius=0.2, color='blue', opacity=1.0, contours='latitude', resolution=40):
         
-        callbackTimes = []
-
         if hasattr(radius[0], '__call__'):
             self.callbacks.append([radius[0], 'radius', len(self.sources), radius[1]])
             radius = radius[0](0.0)
@@ -132,7 +130,7 @@ class figure3D():
         sample = vtk.vtkSampleFunction()
         sample.SetImplicitFunction(sphere)
         sample.SetModelBounds(-.5, .5, -.5, .5, -.5, .5)
-        sample.SetSampleDimensions(20, 20, 20)
+        sample.SetSampleDimensions(resolution, resolution, resolution)
         sample.ComputeNormalsOff()
 
         # contour
@@ -150,6 +148,7 @@ class figure3D():
         actor.GetProperty().EdgeVisibilityOn()
         actor.GetProperty().SetColor(self.colors.GetColor3d('AliceBlue'))
         actor.GetProperty().SetEdgeColor(self.colors.GetColor3d('SteelBlue'))
+        actor.GetProperty().SetOpacity(opacity)
 
         # Append elements
         self.names[name] = len(self.sources)
@@ -165,9 +164,9 @@ class figure3D():
 
         return actor
 
-    def add_ellipsoid(self, name='ellipsoid1', center=[0, 0, 0], orientation=[0, 0, 0], radius=5.2, color='blue', transparency=0.8, contours='latitude'):
+    def add_ellipsoid(self, name='ellipsoid1', center=[0, 0, 0], orientation=[0, 0, 0], radius=5.2, color='blue', opacity=1.0, contours='latitude'):
         
-        # create an ellipsoid using a implicit quadric
+        # create an ellipsoid using an implicit quadric
         quadric = vtk.vtkQuadric()
         quadric.SetCoefficients(0.5, 1, 0.2, 0, 0.1, 0, 0, 0.2, 0, 0)
 

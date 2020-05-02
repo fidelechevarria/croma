@@ -2,6 +2,7 @@
 
 from scipy.spatial.transform import Rotation as R
 import numpy as np
+import pathlib
 import time
 import vtk
 
@@ -195,6 +196,41 @@ class figure3D():
 
         # Initialize must be called prior to creating timer events.
         self.interactor.Initialize()
+
+    def add_model(self, file, center=(0, 0, 0), orientation=(0, 0, 0), color='AliceBlue', opacity=1.0):
+
+        # reader
+        extension = pathlib.Path(file).suffix
+        print(extension)
+        if extension == '.obj':
+            reader = vtk.vtkOBJReader()
+        elif extension == '.stl':
+            reader = vtk.vtkSTLReader()
+        reader.SetFileName(file)
+
+        # mapper
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(reader.GetOutputPort())
+        mapper.ScalarVisibilityOff()
+
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+
+        actor.GetProperty().SetColor(self.colors.GetColor3d(color))
+        actor.GetProperty().SetOpacity(opacity)
+
+        # Append elements
+        self.sources.append(reader)
+        self.mappers.append(mapper)
+        self.actors.append(actor)
+
+        # add the actor
+        self.renderer.AddActor(actor)
+
+        # Initialize must be called prior to creating timer events.
+        self.interactor.Initialize()
+
+        return actor
         
     def add_axes(self, origin=[0, 0, 2], orientation=[0, 0, 0], length=1, color='black', arrow_type='triangle_30'):
 

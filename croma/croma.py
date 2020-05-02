@@ -201,7 +201,6 @@ class figure3D():
 
         # reader
         extension = pathlib.Path(file).suffix
-        print(extension)
         if extension == '.obj':
             reader = vtk.vtkOBJReader()
         elif extension == '.stl':
